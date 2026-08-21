@@ -4611,7 +4611,7 @@ void G4OpenGLQtViewer::toggleSceneTreeComponentPickingCout(int pickItem) {
 
 
 void G4OpenGLQtViewer::currentTabActivated(int currentTab) {
-  if (fUiQt->GetViewerTabWidget()->tabText(currentTab) == GetName())  {
+  if (fUiQt->GetViewerTabWidget()->tabText(currentTab) == QString(GetName()))  {
     createViewerPropertiesWidget();
     createPickInfosWidget();
     createSceneTreeWidget();

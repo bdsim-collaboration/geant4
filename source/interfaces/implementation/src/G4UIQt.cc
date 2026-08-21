@@ -4502,7 +4502,7 @@ QString G4UIQt::FilterOutput(
   const G4UIOutputString& output, const QString& currentThread, const QString& filter)
 {
 #ifdef G4MULTITHREADED
-  if ((currentThread == "All") || (currentThread == output.fThread)) {
+  if ((currentThread == "All") || (currentThread == QString(output.fThread))) {
 #else
   if (currentThread == "") {
 #endif
