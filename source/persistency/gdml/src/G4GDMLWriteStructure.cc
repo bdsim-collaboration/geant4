@@ -311,14 +311,14 @@ void G4GDMLWriteStructure::AssemblyWrite(xercesc::DOMElement* volumeElement,
        std::fabs(pos.y()) > kLinearPrecision ||
        std::fabs(pos.z()) > kLinearPrecision)
     {
-      PositionWrite(physvolElement,name+"_position_" + std::to_string(i5), pos);
+      PositionWrite(physvolElement, name + "_position_" + std::to_string(i5), pos);
     }
 
     if(std::fabs(rot.x()) > kAngularPrecision ||
        std::fabs(rot.y()) > kAngularPrecision ||
        std::fabs(rot.z()) > kAngularPrecision)
     {
-      RotationWrite(physvolElement,name+"_rotation_" + std::to_string(i5), rot);
+      RotationWrite(physvolElement, name + "_rotation_" + std::to_string(i5), rot);
     }
     ++vit;
   }
@@ -618,7 +618,8 @@ G4Transform3D G4GDMLWriteStructure::TraverseVolumeTree(
     daughterCount = 0;
   }
 
-  std::map<G4int, std::vector<G4int> > assemblyIDToAddedImprints;
+  std::map<int, std::vector<int> > assemblyIDToAddedImprints;
+  std::vector<G4int> addedImprints;
 
   for(G4int i = 0; i < daughterCount; ++i)  // Traverse all the children!
   {
@@ -701,7 +702,7 @@ G4Transform3D G4GDMLWriteStructure::TraverseVolumeTree(
             {
               AssemblyWrite(structureElement, assemblyID);
               addedAssemblies.push_back(assemblyID);
-              assemblyIDToAddedImprints[assemblyID] = std::vector<G4int>();
+	            assemblyIDToAddedImprints[assemblyID] = std::vector<int>();
             }
 
             // 2) add the assembly (as physical volume) to the mother volume
@@ -710,9 +711,8 @@ G4Transform3D G4GDMLWriteStructure::TraverseVolumeTree(
 
             // here I need a check if assembly has been already added to the
             // mother volume
-            std::vector<G4int>& addedImprints = assemblyIDToAddedImprints[assemblyID];
-            if(std::find(addedImprints.cbegin(), addedImprints.cend(),
-                         imprintID) == addedImprints.cend())
+	          std::vector<int>& addedImprints2 = assemblyIDToAddedImprints[assemblyID];
+            if(std::find(addedImprints2.cbegin(), addedImprints2.cend(), imprintID) == addedImprints2.cend())
             {
               G4String imprintname = "Imprint_" + std::to_string(imprintID) + "_";
               imprintname          = GenerateName(imprintname, physvol);
@@ -731,16 +731,19 @@ G4Transform3D G4GDMLWriteStructure::TraverseVolumeTree(
               transf.getDecomposition(scale, rotate, translate);
 
               const G4ThreeVector scl(scale(0, 0), scale(1, 1), scale(2, 2));
-              const G4ThreeVector rot = GetAngles(rotate.getRotation().inverse());
+              const G4ThreeVector rot =
+                GetAngles(rotate.getRotation().inverse());
               const G4ThreeVector pos = transf.getTranslation();
 
               // here I need a normal physvol referencing to my assemblyref
 
               xercesc::DOMElement* physvolElement = NewElement("physvol");
-              physvolElement->setAttributeNode(NewAttribute("name", imprintname));
+              physvolElement->setAttributeNode(
+                NewAttribute("name", imprintname));
 
               xercesc::DOMElement* volumerefElement = NewElement("volumeref");
-              volumerefElement->setAttributeNode(NewAttribute("ref", assemblyref));
+              volumerefElement->setAttributeNode(
+                NewAttribute("ref", assemblyref));
               physvolElement->appendChild(volumerefElement);
 
               if(std::fabs(pos.x()) > kLinearPrecision ||
@@ -765,6 +768,7 @@ G4Transform3D G4GDMLWriteStructure::TraverseVolumeTree(
               volumeElement->appendChild(physvolElement);
               //
               addedImprints.push_back(imprintID);
+              addedImprints2.push_back(imprintID);
             }
           }
           else  // not part of assembly, so a normal physical volume
