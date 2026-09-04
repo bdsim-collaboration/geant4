@@ -30,6 +30,11 @@
 //      21-5-98  1 version , V. Grichine
 //      28-05-01, V.Ivanchenko minor changes to provide ANSI -wall compilation
 //      23-05-06, H. Burkhardt: Energy spectrum from function rather than table
+//      14-07-26, G. Broggi: exact Schwinger angular sampling, replacing the
+//                delegation to G4VEmAngularDistribution (G4DipBustGenerator);
+//                optional production threshold, see SetLowestPhotonEnergy()
+//      24-07-26, angular sampling optimised (fast series/Chebyshev
+//                evaluation of K_1/3, K_2/3;
 //
 // ------------------------------------------------------------
 
@@ -45,53 +50,67 @@
 class G4LossTableManager;
 class G4ParticleDefinition;
 class G4PropagatorInField;
-class G4VEmAngularDistribution;
+class G4GenericMessenger;
 
 class G4SynchrotronRadiation : public G4VDiscreteProcess
 {
- public:
-  explicit G4SynchrotronRadiation(const G4String& pName = "SynRad",
-                                  G4ProcessType type    = fElectromagnetic);
+  public:
+    explicit G4SynchrotronRadiation(const G4String& pName = "SynRad",
+                                    G4ProcessType type    = fElectromagnetic);
 
-  virtual ~G4SynchrotronRadiation();
+    virtual ~G4SynchrotronRadiation();
 
-  G4SynchrotronRadiation& operator=(const G4SynchrotronRadiation& right) =
-    delete;
-  G4SynchrotronRadiation(const G4SynchrotronRadiation&) = delete;
+    G4SynchrotronRadiation& operator=(const G4SynchrotronRadiation& right) =
+      delete;
+    G4SynchrotronRadiation(const G4SynchrotronRadiation&) = delete;
 
-  virtual G4double GetMeanFreePath(const G4Track& track,
-                                   G4double previousStepSize,
-                                   G4ForceCondition* condition) override;
+    virtual G4double GetMeanFreePath(const G4Track& track,
+                                     G4double previousStepSize,
+                                     G4ForceCondition* condition) override;
 
-  virtual G4VParticleChange* PostStepDoIt(const G4Track& track,
-                                          const G4Step& Step) override;
+    virtual G4VParticleChange* PostStepDoIt(const G4Track& track,
+                                            const G4Step& Step) override;
 
-  G4double GetPhotonEnergy(const G4Track& trackData, const G4Step& stepData);
+    G4double GetPhotonEnergy(const G4Track& trackData, const G4Step& stepData);
 
-  G4double GetRandomEnergySR(G4double, G4double, G4double);
+    G4double GetRandomEnergySR(G4double gamma, G4double perpB,
+                               G4double mass_c2, G4double& critEnergy);
 
-  G4double InvSynFracInt(G4double x);
-  G4double Chebyshev(G4double a, G4double b, const G4double c[], G4int n,
-                     G4double x);
+    G4double InvSynFracInt(G4double x);
+    G4double Chebyshev(G4double a, G4double b, const G4double c[], G4int n,
+                       G4double x);
 
-  virtual G4bool IsApplicable(const G4ParticleDefinition&) override;
-  virtual void BuildPhysicsTable(const G4ParticleDefinition&) override;
+    virtual G4bool IsApplicable(const G4ParticleDefinition&) override;
+    virtual void BuildPhysicsTable(const G4ParticleDefinition&) override;
 
-  void ProcessDescription(std::ostream&) const override;
-  void DumpInfo() const override { ProcessDescription(G4cout); };
+    void ProcessDescription(std::ostream&) const override;
+    void DumpInfo() const override { ProcessDescription(G4cout); };
 
-  void SetAngularGenerator(G4VEmAngularDistribution* p);
+    // Optional production threshold: SR photons below this energy are not
+    // produced. Default: 0, i.e. no user threshold. An internal,
+    // gamma-dependent floor is always applied in any case, corresponding to
+    // the limit of validity of the small-angle Schwinger formalism.
+    // Setting E_min removes a fraction ~1.23 (E_min/E_c)^(1/3) of the
+    // photons, carrying a fraction ~(E_min/E_c)^(4/3) of the radiated
+    // energy; that energy is not transferred to the charged particle, so
+    // E_min should be kept well below the critical energy E_c.
+    static void SetLowestPhotonEnergy(G4double val)
+    {
+      fLowestPhotonEnergy = (val > 0.0) ? val : 0.0;
+    }
+    static G4double GetLowestPhotonEnergy() { return fLowestPhotonEnergy; }
 
- private:
-  G4LossTableManager* theManager;
-  G4VEmAngularDistribution* genAngle;
-  G4ParticleDefinition* theGamma;
-  G4PropagatorInField* fFieldPropagator;
+  private:
+    G4LossTableManager* theManager;
+    G4ParticleDefinition* theGamma;
+    G4PropagatorInField* fFieldPropagator;
 
-  G4bool FirstTime;
-  G4bool FirstTime1;
+    static G4double fLowestPhotonEnergy;
 
-  G4int secID = -1;  // creator modelID
+    G4bool FirstTime;
+    G4bool FirstTime1;
+
+    G4int secID = -1;  // creator modelID
 };
 
 //////////////////////////  INLINE METHODS  /////////////////////////////
