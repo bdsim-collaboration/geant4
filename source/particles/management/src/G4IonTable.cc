@@ -829,7 +829,8 @@ G4IonTable::FindIon(G4int Z, G4int A, G4double E,
   {    
     // -- loop over all particles in Ion table
     G4int encoding = GetNucleusEncoding(Z, A);
-    for(auto i = fIonList->find(encoding); i != fIonList->cend(); ++i)
+    // Start at the first equivalent key: find() may skip earlier ion states.
+    for (auto i = fIonList->lower_bound(encoding); i != fIonList->cend() && i->first == encoding; ++i)
     {
       ion = i->second;
       if ( (ion->GetAtomicNumber() != Z) || (ion->GetAtomicMass()!=A) ) break;
@@ -903,7 +904,8 @@ G4IonTable::FindIon(G4int Z, G4int A, G4int LL, G4double E,
 
   // -- loop over all particles in Ion table
   G4int encoding=GetNucleusEncoding(Z, A, LL, 0.0, 0);
-  for(auto i = fIonList->find(encoding); i != fIonList->cend() ; ++i)
+  // Start at the first equivalent key: find() may skip earlier ion states.
+  for (auto i = fIonList->lower_bound(encoding); i != fIonList->cend() && i->first == encoding; ++i)
   {
     ion = i->second;
     if ( ( ion->GetAtomicNumber() != Z) || (ion->GetAtomicMass()!=A) ) break;
@@ -964,7 +966,8 @@ G4ParticleDefinition* G4IonTable::FindIon(G4int Z, G4int A, G4int lvl)
   {    
     // -- loop over all particles in Ion table
     G4int encoding=GetNucleusEncoding(Z, A);
-    for(auto i = fIonList->find(encoding); i != fIonList->cend(); ++i)
+    // Start at the first equivalent key: find() may skip earlier ion states.
+    for (auto i = fIonList->lower_bound(encoding); i != fIonList->cend() && i->first == encoding; ++i)
     {
       ion = i->second;
       if ( (ion->GetAtomicNumber() != Z) || (ion->GetAtomicMass()!=A) ) break;
@@ -1021,7 +1024,8 @@ G4IonTable::FindIon(G4int Z, G4int A, G4int LL, G4int lvl)
 
   // -- loop over all particles in Ion table
   G4int encoding=GetNucleusEncoding(Z, A, LL);
-  for(auto i = fIonList->find(encoding); i != fIonList->cend() ; ++i)
+  // Start at the first equivalent key: find() may skip earlier ion states.
+  for (auto i = fIonList->lower_bound(encoding); i != fIonList->cend() && i->first == encoding; ++i)
   {
     ion = i->second;
     if ( (ion->GetAtomicNumber() != Z) || (ion->GetAtomicMass()!=A) ) break;
@@ -1472,7 +1476,8 @@ G4IonTable::GetNucleusMass(G4int Z, G4int A, G4int LL, G4int lvl) const
       // -- loop over all particles in Ion table
       G4int encoding=GetNucleusEncoding(Z, A);
       G4bool isFound = false;
-      for(auto i = fIonList->find(encoding);i != fIonList->cend() ; ++i)
+      // Start at the first equivalent key: find() may skip earlier ion states.
+      for (auto i = fIonList->lower_bound(encoding); i != fIonList->cend() && i->first == encoding; ++i)
       {
         ion = i->second;
         if ( ( ion->GetAtomicNumber()!=Z) || (ion->GetAtomicMass()!=A) ) break;
@@ -1573,7 +1578,8 @@ void G4IonTable::InsertWorker(const G4ParticleDefinition* particle)
   G4bool found = false;
   if (encoding !=0 )
   {
-    for(auto i = fIonList->find(encoding); i != fIonList->cend(); ++i)
+    // Start at the first equivalent key: find() may skip earlier ion states.
+    for (auto i = fIonList->lower_bound(encoding); i != fIonList->cend() && i->first == encoding; ++i)
     {
       if (particle == i->second)
       {
@@ -1637,8 +1643,8 @@ void G4IonTable::Remove(const G4ParticleDefinition* particle)
     G4int encoding=GetNucleusEncoding(Z, A, LL);
     if (encoding !=0 )
     {
-      for(auto i = fIonListShadow->find(encoding);
-               i != fIonListShadow->cend() ; ++i)
+      // Start at the first equivalent key: find() may skip earlier ion states.
+      for (auto i = fIonListShadow->lower_bound(encoding); i != fIonListShadow->cend() && i->first == encoding; ++i)
       {
         if (particle == i->second)
         {
@@ -1943,8 +1949,8 @@ G4bool G4IonTable::Contains(const G4ParticleDefinition* particle) const
   G4bool found = false;
   if (encoding != 0 )
   {
-    for(auto i = fIonListShadow->find(encoding);
-             i != fIonListShadow->cend(); ++i)
+    // Start at the first equivalent key: find() may skip earlier ion states.
+    for (auto i = fIonListShadow->lower_bound(encoding); i != fIonListShadow->cend() && i->first == encoding; ++i)
     {
       if (particle == i->second )
       {
@@ -1986,7 +1992,8 @@ G4IonTable::FindIonInMaster(G4int Z, G4int A, G4double E,
 
   // -- loop over all particles in Ion table
   G4int encoding=GetNucleusEncoding(Z, A);
-  for(auto i = fIonListShadow->find(encoding); i != fIonListShadow->cend(); ++i)
+  // Start at the first equivalent key: find() may skip earlier ion states.
+  for (auto i = fIonListShadow->lower_bound(encoding); i != fIonListShadow->cend() && i->first == encoding; ++i)
   {
     ion = i->second;
     if ( ( ion->GetAtomicNumber() != Z) || (ion->GetAtomicMass()!=A) ) break;
@@ -2028,7 +2035,8 @@ G4IonTable::FindIonInMaster(G4int Z, G4int A, G4int LL, G4double E,
 
   // -- loop over all particles in Ion table
   G4int encoding = GetNucleusEncoding(Z, A, LL, 0.0, 0);
-  for(auto i = fIonListShadow->find(encoding); i != fIonListShadow->cend(); ++i)
+  // Start at the first equivalent key: find() may skip earlier ion states.
+  for (auto i = fIonListShadow->lower_bound(encoding); i != fIonListShadow->cend() && i->first == encoding; ++i)
   {
     ion = i->second;
     if ( ( ion->GetAtomicNumber() != Z) || (ion->GetAtomicMass()!=A) ) break;
@@ -2067,7 +2075,8 @@ G4ParticleDefinition* G4IonTable::FindIonInMaster(G4int Z, G4int A, G4int lvl)
 
   // -- loop over all particles in Ion table
   G4int encoding=GetNucleusEncoding(Z, A);
-  for(auto i = fIonListShadow->find(encoding); i != fIonListShadow->cend(); ++i)
+  // Start at the first equivalent key: find() may skip earlier ion states.
+  for (auto i = fIonListShadow->lower_bound(encoding); i != fIonListShadow->cend() && i->first == encoding; ++i)
   {
     ion = i->second;
     if ( ( ion->GetAtomicNumber() != Z) || (ion->GetAtomicMass()!=A) ) break;
@@ -2103,7 +2112,8 @@ G4IonTable::FindIonInMaster(G4int Z, G4int A, G4int LL, G4int lvl)
 
   // -- loop over all particles in Ion table
   G4int encoding=GetNucleusEncoding(Z, A, LL);
-  for(auto i = fIonListShadow->find(encoding); i != fIonListShadow->cend(); ++i)
+  // Start at the first equivalent key: find() may skip earlier ion states.
+  for (auto i = fIonListShadow->lower_bound(encoding); i != fIonListShadow->cend() && i->first == encoding; ++i)
   {
     ion = i->second;
     if ( ( ion->GetAtomicNumber() != Z) || (ion->GetAtomicMass()!=A) ) break;
