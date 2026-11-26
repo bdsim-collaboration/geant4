@@ -510,7 +510,7 @@ G4VParticleChange* G4BiasingProcessInterface::PostStepDoIt(const G4Track& track,
                                weightForInteraction,
                                fFinalStateBiasingOperation,
                                finalStateParticleChange );
-
+  fOccurenceBiasingParticleChange->Initialize( track );
   fOccurenceBiasingParticleChange->SetOccurenceWeightForInteraction( weightForInteraction );
   fOccurenceBiasingParticleChange->SetSecondaryWeightByProcess( true );
   fOccurenceBiasingParticleChange->SetWrappedParticleChange( finalStateParticleChange );
@@ -539,6 +539,7 @@ AlongStepGetPhysicalInteractionLength(const G4Track& track,
   // ---------------------------------------
   // -- case outside of volume with biasing:
   // ---------------------------------------
+  fOccurenceBiasingParticleChange->Initialize( track );
   if ( fSharedData->fCurrentBiasingOperator == nullptr )
   {
     if ( fWrappedProcessIsAlong )
