@@ -552,7 +552,8 @@ G4VParticleChange* G4BiasingProcessInterface::PostStepDoIt(const G4Track& track,
 								  fOccurenceBiasingOperation,  weightForInteraction,
 								  fFinalStateBiasingOperation, finalStateParticleChange );
 
-
+  
+  fOccurenceBiasingParticleChange->Initialize( track );
   fOccurenceBiasingParticleChange->SetOccurenceWeightForInteraction( weightForInteraction );
   fOccurenceBiasingParticleChange->SetSecondaryWeightByProcess( true );
   fOccurenceBiasingParticleChange->SetWrappedParticleChange( finalStateParticleChange );
@@ -665,6 +666,7 @@ G4VParticleChange* G4BiasingProcessInterface::AlongStepDoIt(const G4Track& track
   // -----------------------------------
   // -- case inside volume with biasing:
   // -----------------------------------
+  fOccurenceBiasingParticleChange->Initialize( track );
   if ( fWrappedProcessIsAlong ) fOccurenceBiasingParticleChange->SetWrappedParticleChange( fWrappedProcess->AlongStepDoIt(track, step) );
   else  
     {
